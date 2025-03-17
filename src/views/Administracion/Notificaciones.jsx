@@ -22,7 +22,7 @@ const Notificaciones = () => {
     // Función que manejará el envío de la notificación
     const handleSendNotification = (values, { resetForm }) => {
         selectionModel.forEach((id) => {
-            service.PostNotificaciones({ message: values.message, user_id: id });
+            service.PostNotificaciones({ Message: values.message, UserId: id });
         });
         resetForm();
     };

@@ -23,6 +23,16 @@ class NotificationService {
         }
     }
 
+    PostNotificaciones = async ( data ) => {
+        try {
+            const response = await axios.post("/api/notifications/", data);
+
+            return response.data
+        } catch (error) {
+            throw new Error(error);   
+        }
+    }
+
     // Conexion websocket que recibe los datos cuando llega una notificacion
     WebSocketNotifications = async ( UserID, handleOnNotification ) => {
         const socketUrl = `${import.meta.env.VITE_APP_API_WEBSOCKET}api/notifications/live?userID=${UserID}`;
