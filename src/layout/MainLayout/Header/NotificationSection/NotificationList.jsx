@@ -7,7 +7,6 @@ import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -72,19 +71,20 @@ const NotificationList = ({ notificationsData, setRead }) => {
     return (
         <List sx={{ width: '100%', maxWidth: { xs: 300, md: 330 }, py: 0 }}>
             {notificationsData.map((notification, index) => 
-                <ListItemWrapper key={notification.id}>
+                <ListItemWrapper key={notification.ID}>
+                    {/* {console.log(notification)} */}
                     <ListItem alignItems="center" disablePadding>
                         <ListItemAvatar>
                             <NotificationsActiveIcon />
                         </ListItemAvatar>
                         <Stack direction="row" alignItems="center" spacing={2} justifyContent="space-between" sx={{ flex: 1 }}>
                             <Typography variant="h4">Sistema</Typography>
-                            <Typography variant="caption">{calculateRelativeTime(notification.created_at)}</Typography>
+                            <Typography variant="caption">{calculateRelativeTime(notification.CreatedAt)}</Typography>
                         </Stack>
                     </ListItem>
                     <Stack spacing={2} sx={containerSX}>
-                        <Typography variant={notification.read ? "subtitle2" : "subtitle1"}>{notification.message}</Typography>
-                        {!notification.read ? 
+                        <Typography variant={notification.Seen ? "subtitle2" : "subtitle1"}>{notification.Message}</Typography>
+                        {!notification.Seen ? 
                             <Stack direction="row" alignItems="center" spacing={1}>
                                 <Chip
                                     label="Marcar como leído"
@@ -96,7 +96,7 @@ const NotificationList = ({ notificationsData, setRead }) => {
                                         border: 'none',
                                         bgcolor: theme.palette.mode === ThemeMode.DARK ? 'dark.main' : 'warning.light'
                                     }}
-                                    onClick={() => {setRead(notification.id)}}
+                                    onClick={() => {setRead(notification.ID)}}
                                 />
                             </Stack>
                             : null

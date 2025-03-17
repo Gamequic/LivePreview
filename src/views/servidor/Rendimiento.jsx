@@ -29,22 +29,28 @@ const WebSocketMetrics = () => {
         setLoading(true);
     
         try {
-            ws = new WebSocket(import.meta.env.VITE_APP_API_WEBSOCKET + 'api/serverStats/');
-    
+            // ws = new WebSocket(import.meta.env.VITE_APP_API_WEBSOCKET + 'api/system/metrics');
+            ws = new WebSocket('ws://localhost:8080/api/system/metrics');
+
             ws.onopen = () => {
-                console.log('Conexión WebSocket abierta');
+                console.log('WebSocket connection opened');
+                
+                // Send the token as an authentication message after connection is established
+                const token = localStorage.getItem('serviceToken');
+                ws.send(JSON.stringify(token));
+            
                 setIsConnected(true);
                 setLoading(false);
-    
+            
                 const pingInterval = setInterval(() => {
                     if (ws.readyState === WebSocket.OPEN) {
                         ws.send(JSON.stringify({ type: 'ping' }));
                     }
                 }, 30000);
-    
+            
                 ws.onclose = () => {
                     clearInterval(pingInterval);
-                    console.log('Conexión WebSocket cerrada');
+                    console.log('WebSocket connection closed');
                     setIsConnected(false);
                 };
             };

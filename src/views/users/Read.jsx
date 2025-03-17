@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useReactToPrint } from "react-to-print";
 
 // material-ui
 import Box from '@mui/material/Box';
@@ -36,9 +35,6 @@ import permissionManager from 'utils/permissionManager';
 
 // assets
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterListTwoTone';
-import PrintIcon from '@mui/icons-material/PrintTwoTone';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
@@ -90,7 +86,7 @@ const headCells = [
 
 // ==============================|| TABLE HEADER ||============================== //
 
-function EnhancedTableHead({ onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, selected, printing }) {
+function EnhancedTableHead({ onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort, selected }) {
     const createSortHandler = (property) => (event) => {
         onRequestSort(event, property);
     };
@@ -139,11 +135,9 @@ function EnhancedTableHead({ onSelectAllClick, order, orderBy, numSelected, rowC
                 <TableCell sortDirection={false} align="center" sx={{ pr: 3 }}>
                     Perfiles
                 </TableCell>
-                { !printing ? 
                 <TableCell sortDirection={false} align="center" sx={{ pr: 3 }}>
                     Acciones
-                </TableCell> : null
-                }
+                </TableCell>
             </TableRow>
         </TableHead>
     );
@@ -201,22 +195,6 @@ EnhancedTableToolbar.propTypes = {
 const CustomerList = () => {
     const navigate = useNavigate();
     const tableRef = React.useRef();
-
-    const [ printing, setPrinting ] = React.useState(false);
-
-    const print = useReactToPrint({
-        contentRef: tableRef
-    });
-    const handlePrint = () => {
-        setPrinting(true)
-    }
-
-    React.useEffect(() => {
-        if (printing) {
-            print();
-            setPrinting(false);
-        }
-    }, [printing]);
 
     const { openConfirmDialog, ConfirmDialogComponent } = useConfirm();
 
@@ -342,16 +320,6 @@ const CustomerList = () => {
                                 </IconButton>
                             </Tooltip> : null 
                             }
-                            <Tooltip title="Exportar">
-                                <IconButton onClick={service.exportUsers} size="large">
-                                    <FileDownloadIcon />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Print">
-                                <IconButton onClick={handlePrint} size="large">
-                                    <PrintIcon />
-                                </IconButton>
-                            </Tooltip>
                         </Grid>
                     </Grid>
                 </CardContent>
@@ -361,7 +329,6 @@ const CustomerList = () => {
                     <TableContainer>
                         <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
                             <EnhancedTableHead
-                                printing={printing}
                                 numSelected={selected.length}
                                 order={order}
                                 orderBy={orderBy}
@@ -415,47 +382,38 @@ const CustomerList = () => {
                                                     )}
                                                 </TableCell>
                                                 <TableCell align="center" sx={{ pr: 3 }}>
-                                                    {permissionManager({ profiles: [1,2,3], permission: 'update'}) ? 
                                                     <Tooltip title="Editar perfil">
                                                         <IconButton
                                                             color="secondary"
                                                             size="large"
                                                             aria-label="View"
-                                                            onClick={() => {navigate('/users/update/'+row.id)}}
-                                                            disabled = {!permissionManager({ profiles: [1,2,3], permission: 'update'})}
+                                                            onClick={() => {navigate('/users/update/'+row.ID)}}
                                                         >
                                                             <EditTwoToneIcon sx={{ fontSize: '1.3rem' }} />
                                                         </IconButton>
-                                                    </Tooltip> : null
-                                                    }
-
-                                                    {permissionManager({ profiles: [1,2,3], permission: 'soft_delete'}) ? 
+                                                    </Tooltip>
+                                                    
                                                     <Tooltip title="Enviar a la papelera">
                                                         <IconButton
                                                             color="secondary"
                                                             size="large"
                                                             aria-label="View"
                                                             onClick={() => openConfirmDialog(() => {handleDelete({userId: row.id, hard: false})}, ('¿Estás segura de que quieres enviar a la usuario ' + row.name + ' en la papelera?'))}
-                                                            disabled = {!permissionManager({ profiles: [1,2,3], permission: 'soft_delete'})}
                                                         >
                                                             <DeleteIcon sx={{ fontSize: '1.3rem' }} />
                                                         </IconButton>
-                                                    </Tooltip> : null
-                                                    }
-
-                                                    {permissionManager({ profiles: [1,2,3], permission: 'hard_delete'}) ? 
+                                                    </Tooltip>
+                                                    
                                                     <Tooltip title="Eliminar de forma permanente">
                                                         <IconButton
                                                             color="secondary"
                                                             size="large"
                                                             aria-label="View"
                                                             onClick={() => openConfirmDialog(() => {handleDelete({userId: row.id, hard: true})}, ('¿Está seguro de que desea eliminar el usuario ' + row.name + ' de forma permanente?'))}
-                                                            disabled = {!permissionManager({ profiles: [1,2,3], permission: 'hard_delete'})}
                                                         >
                                                             <DeleteForeverIcon sx={{ fontSize: '1.3rem' }} />
                                                         </IconButton>
-                                                    </Tooltip> : null
-                                                    }
+                                                    </Tooltip>
                                                 </TableCell>
                                             </TableRow>
                                         );

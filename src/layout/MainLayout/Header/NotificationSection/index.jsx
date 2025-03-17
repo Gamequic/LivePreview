@@ -76,7 +76,7 @@ const NotificationSection = () => {
         requestNotificationPermission();
 
         // Iniciar conexion para traer notificaiones en vivo
-        const { cleanup } = service.WebSocketNotifications(user.id, handleOnNotification);
+        const { cleanup } = service.WebSocketNotifications(user.ID, handleOnNotification);
         
         // Devuelve la función de limpieza
         return cleanup;
@@ -124,7 +124,7 @@ const NotificationSection = () => {
         // Mandar notificacion al navegador, solo si esta permitido
         if (Notification.permission === "granted") {
             new Notification("Live Preview - Calleros", {
-                body: parsedNotification.message,
+                body: parsedNotification.Message,
                 icon: logo,
             });
         }
@@ -157,14 +157,14 @@ const NotificationSection = () => {
     const ReadMessage = (messageId) => {
         // Crea una copia del array de notificaciones y actualiza el elemento con el ID especificado
         const updatedNotifications = notifications.map((item) =>
-            item.id === messageId ? { ...item, read: true } : item
+            item.ID === messageId ? { ...item, Seen: true } : item
         );
         // Actualiza el estado con las notificaciones modificadas
         setNotifications(updatedNotifications);
     
         // Si necesitas actualizar las notificaciones filtradas también
         const updatedFilteredNotifications = filteredNotifications.map((item) =>
-            item.id === messageId ? { ...item, read: true } : item
+            item.ID === messageId ? { ...item, Seen: true } : item
         );
         setFilteredNotifications(updatedFilteredNotifications);
 
@@ -176,9 +176,9 @@ const NotificationSection = () => {
     const handleChange = (event) => {
         event?.target.value && setValue(event?.target.value);
         if ( event?.target.value === 'unread' ) {
-            setFilteredNotifications(notifications.filter(item => item.read === false))
+            setFilteredNotifications(notifications.filter(item => item.Seen === false))
         } else if ( event?.target.value === 'read' ) {
-            setFilteredNotifications(notifications.filter(item => item.read === true))
+            setFilteredNotifications(notifications.filter(item => item.Seen === true))
         } else {
             setFilteredNotifications(notifications);
         }

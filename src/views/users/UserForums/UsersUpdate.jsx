@@ -7,7 +7,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import { Table, TableHead, TableBody, TableRow, TableCell, Checkbox, TableContainer, Paper } from "@mui/material";
 
 // third party
 import * as Yup from 'yup';
@@ -20,26 +19,18 @@ import isDevMode from 'utils/isDevMode';
 
 import UsersService from 'contexts/JWTContext/Users';
 import ProfilesService from 'contexts/JWTContext/Profiles';
-import UisService from 'contexts/JWTContext/UI';
-import UosService from 'contexts/JWTContext/UO';
 
 // Service
 const service = new UsersService();
-const profilesService = new ProfilesService();
-const uisService = new UisService();
-const uosService = new UosService();
+const profileService = new ProfilesService();
 
 const UsersUpdate = ({ userId }) => {
     const navigate = useNavigate();
 
     const [user, setUser] = useState({});
-    const [name, setName] = useState({ Name: "Ingresa tu matricula para encontrar tu nombre.", valid: isDevMode });
+    const [name, setName] = useState("");
     const [profilesData, setProfilesData] = useState([]);
-    const [uisData, setUisData] = useState([]);
     const [selectedProfiles, setSelectedProfiles] = useState([]);
-    const [selectedUis, setSelectedUis] = useState([]);
-    const [uosData, setUosData] = useState([]);
-    const [selectedUos, setSelectedUos] = useState([]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -47,66 +38,23 @@ const UsersUpdate = ({ userId }) => {
             setUser(userData);
 
             // Get profiles
-            const profiles = await profilesService.getProfiles();
-            const updatedProfiles = profiles.map(profileObj => ({
-                ...profileObj,
-                profile_id: profileObj.id,
-                label: profileObj.profile
-            }));
-            setProfilesData(updatedProfiles);
+            const profilesData = await profileService.getProfiles();
+            profilesData.forEach(profile => {
+                profile.label = profile.name;
+            });
+            setProfilesData(profilesData);
 
             // Find the initial profiles
             const profilesFilter = [];
-            for (let profile in userData.profiles) {
-                let ProfileId = userData.profiles[profile].profile_id
-                const Profile = updatedProfiles.filter(obj => obj.id === ProfileId)[0];
+            userData.Profiles.forEach(profileID => { 
+                const Profile = profilesData.filter(obj => obj.id === profileID)[0];
                 profilesFilter.push({
-                    ...Profile
+                    ...Profile,
+                    profile_id: Profile,
+                    label: Profile.name
                 })
-            }
+            });
             setSelectedProfiles(profilesFilter);
-
-
-            // Get uis
-            const uis = await uisService.getUIs();
-            const updatedUis = uis.map(uisObj => ({
-                ...uisObj,
-                ui_id: uisObj.id,
-                label: uisObj.nombre
-            }));
-            setUisData(updatedUis);
-
-            // Find the initial uis
-            const uisFilter = [];
-            for (let ui in userData.uis) {
-                let uiId = userData.uis[ui].ui_id
-                const UI = updatedUis.filter(obj => obj.id === uiId)[0];
-                uisFilter.push({
-                    ...UI
-                })
-            }
-            setSelectedUis(uisFilter);
-
-            // Get uos
-            const uos = await uosService.getUOs();
-            const updatedUos = uos.map(uosObj => ({
-                ...uosObj,
-                uo_id: uosObj.id,
-                label: uosObj.unidad_operativa
-            }));
-            setUosData(updatedUos);
-
-            // Find the initial uis
-            const uosFilter = [];
-            for (let uo in userData.uos) {
-                let uoId = userData.uos[uo].uo_id
-                const UO = updatedUos.filter(obj => obj.id === uoId)[0];
-                uosFilter.push({
-                    ...UO
-                })
-            }
-            setSelectedUos(uosFilter);
-
         };
 
         fetchUserData();
@@ -114,71 +62,22 @@ const UsersUpdate = ({ userId }) => {
 
     // Validación del formulario
     const validationSchema = Yup.object().shape({
-        matricula: Yup.string().max(255).required('La matricula es obligatoria.'),
-        email: Yup.string().email('El correo tiene que ser válido.').max(255).required('El correo es obligatorio.'),
-        name: Yup.string().max(255).required('El nombre es obligatorio.'),
-        password: Yup.string().max(255)
+        Email: Yup.string().email('El correo tiene que ser válido.').max(255).required('El correo es obligatorio.'),
+        Name: Yup.string().max(255).required('El nombre es obligatorio.'),
+        Password: Yup.string().max(255)
     });
 
     const handleChangeProfiles = (event, newValue) => {
         let tempUser = { ...user };
-    
-        tempUser.profiles = newValue.map(profileData => {
-            let existingProfile = undefined;
-            try {
-                existingProfile = user.profiles.find(profile => profile.profile_id === profileData.id);
-            } catch (error) {
-                let existingProfile = undefined;
-            }
-    
-            if (existingProfile) {
-                return {
-                    ...existingProfile,
-                    ...profileData,
-                    profile_id: profileData.id,
-                    priv_export: existingProfile.priv_export,
-                    priv_print: existingProfile.priv_print,
-                    priv_hard_delete: existingProfile.priv_hard_delete,
-                    priv_soft_delete: existingProfile.priv_soft_delete,
-                    priv_update: existingProfile.priv_update,
-                    priv_read: existingProfile.priv_read,
-                    priv_create: existingProfile.priv_create
-                };
-            }
-    
-            return {
-                ...profileData,
-                profile_id: profileData.id,
-                priv_export: false,
-                priv_print: false,
-                priv_hard_delete: false,
-                priv_soft_delete: false,
-                priv_update: false,
-                priv_read: false,
-                priv_create: false
-            };
-        });
+
+        // Recorer la lista de objetos de newValue para crear una lista de unicamente los id
+        let profilesListId  = newValue.map(profile => profile.id);
+
+        tempUser.Profiles = profilesListId;
     
         setUser(tempUser);
         setSelectedProfiles(newValue);
     };
-
-    const handleChangeUis = (event, newValue) => {
-        setSelectedUis(newValue);
-    };
-
-    const handleChangeUos = (event, newValue) => {
-        setSelectedUos(newValue);
-    };
-
-    const handleCheckboxTable = (event, profileId, permission) => {
-        const updatedUser = { ...user };
-        const profile = updatedUser.profiles.find(filterProfile => filterProfile.profile_id === profileId);
-        if (profile) {
-            profile[permission] = event.target.checked;
-        }
-        setUser(updatedUser);
-    };    
     
     return (
         <>
@@ -186,18 +85,22 @@ const UsersUpdate = ({ userId }) => {
                 <Formik
                     enableReinitialize
                     initialValues={{
-                        matricula: user.matricula || '',
-                        email: user.email || '',
-                        name: user.name || name.Name,
+                        Password: user.Password || '',
+                        Email: user.Email || '',
+                        Name: user.Name || '',
                     }}
                     validationSchema={validationSchema}
                     onSubmit={(values, { setSubmitting }) => {
                         const submitValues = {
                             ...values,
-                            password: values.password === "" ? null : values.password
+                            Profiles: user.Profiles,
+                            Password: values.Password === "" ? null : values.Password,
+                            ID: Number(userId)
                         }
 
-                        service.updateUser(userId, submitValues, user.profiles, selectedUis, selectedUos)
+                        console.log(submitValues);
+
+                        service.updateUser(submitValues)
                         setSubmitting(false);
                         navigate('/users');
                         window.location.reload();
@@ -212,16 +115,12 @@ const UsersUpdate = ({ userId }) => {
                                     <TextField
                                         fullWidth
                                         label="Nombre"
-                                        name="name"
-                                        value={values.name}
-                                        disabled={!isDevMode}
-                                        onChange={(e) => {
-                                            setName({ Name: e.target.value, valid: true });
-                                            handleChange(e);
-                                        }}
+                                        name="Name"
+                                        value={values.Name}
+                                        onChange={handleChange}
                                         onBlur={handleBlur}
-                                        error={Boolean(touched.name && errors.name)}
-                                        helperText={touched.name && errors.name}
+                                        error={Boolean(touched.Name && errors.Name)}
+                                        helperText={touched.Name && errors.Name}
                                     />
                                 </div>
 
@@ -229,12 +128,12 @@ const UsersUpdate = ({ userId }) => {
                                     <TextField
                                         fullWidth
                                         label="Correo Electrónico"
-                                        name="email"
+                                        name="Email"
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        value={values.email}
-                                        error={Boolean(touched.email && errors.email)}
-                                        helperText={touched.email && errors.email}
+                                        value={values.Email}
+                                        error={Boolean(touched.Email && errors.Email)}
+                                        helperText={touched.Email && errors.Email}
                                     />
                                 </div>
 
@@ -242,12 +141,12 @@ const UsersUpdate = ({ userId }) => {
                                     <TextField
                                         fullWidth
                                         label="Contraseña ( Dejar en blanco si no va a ver cambios )"
-                                        name="password"
+                                        name="Password"
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        value={values.password}
-                                        error={Boolean(touched.password && errors.password)}
-                                        helperText={touched.password && errors.password}
+                                        value={values.Password}
+                                        error={Boolean(touched.Password && errors.Password)}
+                                        helperText={touched.Password && errors.Password}
                                     />
                                 </div>
 
@@ -287,109 +186,7 @@ const UsersUpdate = ({ userId }) => {
                         <p>Cargando</p>
                     )}
                 </Grid>
-                <Grid sx={{ mt: 2 }} item>
-                    {uisData.length > 0 ? (
-                        <Autocomplete
-                            multiple
-                            options={uisData}
-                            getOptionLabel={(option) => option.label}
-                            value={selectedUis}
-                            onChange={handleChangeUis}
-                            defaultValue={selectedUis}
-                            isOptionEqualToValue={(option, value) => option.id === value.id}
-                            renderInput={(params) => <TextField label="Unidades" {...params} />}
-                        />
-                    ) : (
-                        <p>Cargando</p>
-                    )}
-                </Grid>
-                <Grid sx={{ mt: 2 }} item>
-                    {uosData.length > 0 ? (
-                        <Autocomplete
-                            multiple
-                            options={uosData}
-                            getOptionLabel={(option) => option.label}
-                            value={selectedUos}
-                            onChange={handleChangeUos}
-                            defaultValue={selectedUos}
-                            isOptionEqualToValue={(option, value) => option.id === value.id}
-                            renderInput={(params) => <TextField label="Delegacion" {...params} />}
-                        />
-                    ) : (
-                        <p>Cargando</p>
-                    )}
-                </Grid>
             </Grid>
-
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                    <TableRow>
-                        <TableCell>Nombre</TableCell>
-                        <TableCell>Crear</TableCell>
-                        <TableCell>Leer</TableCell>
-                        <TableCell>Editar</TableCell>
-                        <TableCell>Borrar</TableCell>
-                        <TableCell>Borrar permanentemente</TableCell>
-                        <TableCell>Imprimir</TableCell>
-                        <TableCell>Exportar</TableCell>
-                    </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {user && user.profiles ? (
-                            user.profiles.map((profile, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{profile.profile}</TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={profile.priv_create}
-                                            onChange={(e) => handleCheckboxTable(e, profile.profile_id, "priv_create")}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={profile.priv_read}
-                                            onChange={(e) => handleCheckboxTable(e, profile.profile_id, "priv_read")}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={profile.priv_update}
-                                            onChange={(e) => handleCheckboxTable(e, profile.profile_id, "priv_update")}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={profile.priv_soft_delete}
-                                            onChange={(e) => handleCheckboxTable(e, profile.profile_id, "priv_soft_delete")}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={profile.priv_hard_delete}
-                                            onChange={(e) => handleCheckboxTable(e, profile.profile_id, "priv_hard_delete")}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={profile.priv_print}
-                                            onChange={(e) => handleCheckboxTable(e, profile.profile_id, "priv_print")}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={profile.priv_export}
-                                            onChange={(e) => handleCheckboxTable(e, profile.profile_id, "priv_export")}
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <p>Cargando</p>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
         </>
     );
 };
