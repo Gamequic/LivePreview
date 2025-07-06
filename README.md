@@ -12,9 +12,9 @@
 - 📄 Log viewer  
 - 📱 Mobile view (responsive layout)
 
-![Login View](./screenshots/login.png)
-![Dashboard View](./screenshots/dashboard.png)
-![Log Viewer](./screenshots/logs.png)
+![Login View](./screenshots/Login.png)
+![Dashboard View](./screenshots/Dashboard.png)
+![Log Viewer](./screenshots/LogViewer.png)
 
 ## 🚀 Key Features
 
