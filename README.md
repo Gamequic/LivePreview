@@ -106,9 +106,9 @@ npm run dev
 # 📬 Contact
 Want to collaborate or learn more?
 
-GitHub: @gamequic
+GitHub: [@gamequic]([https://url-del-enlace.com](https://github.com/gamequic))
 
-Portfolio: calleros.dev
+Portfolio: [Calleros.dev]([https://calleros.dev))
 
 ## 🛑 Disclaimer
 This is a non-sensitive version of a real enterprise system. Code and architecture are representative, but no institutional or private data is exposed. Designed for public showcasing and adaptation.
