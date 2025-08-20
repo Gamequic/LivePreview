@@ -4,8 +4,6 @@
 
 ## 📸 Screenshots
 
-> *(Replace these with actual screenshots located in `/public/screenshots/`)*
-
 - 🔐 Login & Authentication  
 - 🧩 Role-based access control  
 - 📊 Real-time system monitoring  
